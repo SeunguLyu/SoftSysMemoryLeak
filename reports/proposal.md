@@ -1,4 +1,4 @@
-# MemoryLeak - Interactive C Game without Memory Leaks
+# MemoryLeak - Interactive C Game
 
 ## Members
 [SeungU Lyu](https://github.com/SeunguLyu)
