@@ -19,12 +19,22 @@ int g_userMoveFrame = 5;
 int g_currentUserMoveFrame = 0;
 
 char logo[][300] = {
+
     "███╗░░░███╗███████╗███╗░░░███╗░█████╗░██████╗░██╗░░░██╗██╗░░░░░███████╗░█████╗░██╗░░██╗",
     "████╗░████║██╔════╝████╗░████║██╔══██╗██╔══██╗╚██╗░██╔╝██║░░░░░██╔════╝██╔══██╗██║░██╔╝",
     "██╔████╔██║█████╗░░██╔████╔██║██║░░██║██████╔╝░╚████╔╝░██║░░░░░█████╗░░███████║█████═╝░",
     "██║╚██╔╝██║██╔══╝░░██║╚██╔╝██║██║░░██║██╔══██╗░░╚██╔╝░░██║░░░░░██╔══╝░░██╔══██║██╔═██╗░",
     "██║░╚═╝░██║███████╗██║░╚═╝░██║╚█████╔╝██║░░██║░░░██║░░░███████╗███████╗██║░░██║██║░╚██╗",
     "╚═╝░░░░░╚═╝╚══════╝╚═╝░░░░░╚═╝░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝",
+};
+
+char description[][100] = {
+    "Long, long time ago in the Softsys Class",
+    "A Oliner decided to finish his project in a single day...",
+    "It worked perfectly on the day he presented it...",
+    "Without knowing that the Memory was Leaking!!!",
+    "You accidently compiled his program...",
+    "And now you have to destroy all the leaking memories!"
 };
 
 void gameplay(WINDOW *win)
@@ -75,7 +85,18 @@ void gameplay(WINDOW *win)
     }
     
     flushinp();
-    mvwprintw(win, 1, 1,logo[0]);
+
+    for (int i = 0; i<6; i++)
+    {
+        mvwprintw(win, 5+i, 7, logo[i]);
+    }
+
+    for (int i = 0; i<6; i++)
+    {
+        int xpos = (WIDTH - strlen(description[i]))/2;
+        mvwprintw(win, 14+2*i, xpos, description[i]);
+    }
+
     wattron(win,COLOR_PAIR(1));
     mvwprintw(win, g_curY, g_curX,"@");
     wattroff(win,COLOR_PAIR(1));
