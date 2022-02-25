@@ -9,6 +9,12 @@
 #define WIDTH 100
 #define HEIGHT 40
 
+struct Enemy
+{
+    int x;
+    int y;
+};
+
 int g_terminal_y = 0, g_terminal_x = 0;
 
 int g_game_status = 0;
@@ -18,8 +24,10 @@ int g_player_dir = -1;
 int g_player_x = WIDTH/2;
 int g_player_y = HEIGHT/2;
 
-int g_player_move_frame = 5;
+int g_player_move_frame = 10;
 int g_current_player_move_frame = 0;
+
+struct Enemy g_enemies[1000];
 
 char logo[][300] = {
 
@@ -53,6 +61,8 @@ char description[][100] = {
 char selection[][30] = {
     "Start Game",
     "Exit Game",
+    "Press W,A,S,D to move",
+    "Press Enter to Select",
 };
 
 void title(WINDOW *win)
@@ -88,37 +98,49 @@ void title(WINDOW *win)
     
     flushinp();
 
+    wattron(win,COLOR_PAIR(3));
     for (int i = 0; i<6; i++)
     {
         mvwprintw(win, 5+i, 7, logo[i]);
     }
+    wattroff(win,COLOR_PAIR(3));
 
     for (int i = 0; i<6; i++)
     {
         int xpos = (WIDTH - strlen(description[i]))/2;
         mvwprintw(win, 14+2*i, xpos, description[i]);
     }
+
+    int xpos = (WIDTH - strlen(selection[2]))/2;
+    wattron(win,COLOR_PAIR(1));
+    mvwprintw(win, 27, xpos, selection[2]);
+    xpos = (WIDTH - strlen(selection[3]))/2;
+    mvwprintw(win, 29, xpos, selection[3]);
+    wattroff(win,COLOR_PAIR(1));
     
     if (g_title_selection == 0)
     {
         int xpos = (WIDTH - strlen(selection[0]))/2;
         wattron(win,COLOR_PAIR(2));
-        mvwprintw(win, 30, xpos, selection[0]);
+        mvwprintw(win, 32, xpos, selection[0]);
         wattroff(win,COLOR_PAIR(2));
+        wattron(win,COLOR_PAIR(4));
         xpos = (WIDTH - strlen(selection[1]))/2;
-        mvwprintw(win, 32, xpos, selection[1]);
+        mvwprintw(win, 34, xpos, selection[1]);
+        wattroff(win,COLOR_PAIR(4));
     }
     else
     {
         int xpos = (WIDTH - strlen(selection[0]))/2;
-        mvwprintw(win, 30, xpos, selection[0]);
+        wattron(win,COLOR_PAIR(4));
+        mvwprintw(win, 32, xpos, selection[0]);
+        wattroff(win,COLOR_PAIR(4));
         xpos = (WIDTH - strlen(selection[1]))/2;
         wattron(win,COLOR_PAIR(2));
-        mvwprintw(win, 32, xpos, selection[1]);
+        mvwprintw(win, 34, xpos, selection[1]);
         wattroff(win,COLOR_PAIR(2));
     }
 
-    
     if (end == 1)
     {
         if (g_title_selection == 0)
@@ -139,7 +161,8 @@ void title(WINDOW *win)
 void resize()
 {
     clear();
-    mvprintw(1, 1, "Plase resize the window and re-run the program");
+    mvprintw(1, 1, "Please resize the terminal and re-run the program");
+    mvprintw(2, 1, "The size should be at least 100 columns and 40 lines");
     refresh();
 }
 
@@ -194,11 +217,25 @@ void gameplay(WINDOW *win)
     flushinp();
 
     wattron(win,COLOR_PAIR(1));
-    mvwprintw(win, g_player_y, g_player_x,"@");
+    mvwprintw(win, g_player_y, g_player_x,"⚇");
     wattroff(win,COLOR_PAIR(1));
 
     wrefresh(win);
     usleep(10000);
+}
+
+void player_enemy_collision_check()
+{
+    
+}
+
+void initialize_colors()
+{
+    start_color();
+    init_pair(1,COLOR_BLUE,COLOR_BLACK);
+    init_pair(2,COLOR_YELLOW,COLOR_WHITE);
+    init_pair(3,COLOR_MAGENTA,COLOR_BLACK);
+    init_pair(4,COLOR_YELLOW,COLOR_BLACK);
 }
 
 int main(int argc, char *argv[]) 
@@ -211,9 +248,7 @@ int main(int argc, char *argv[])
 	curs_set(0); 
     nodelay(stdscr, 1);
 
-    start_color();
-    init_pair(1,COLOR_RED,COLOR_YELLOW);
-    init_pair(2,COLOR_BLACK,COLOR_WHITE);
+    initialize_colors();
 
     srand(time(NULL));
 
