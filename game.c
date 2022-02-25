@@ -9,14 +9,17 @@
 #define WIDTH 100
 #define HEIGHT 40
 
-int g_gameStatus = 0;
+int g_terminal_y = 0, g_terminal_x = 0;
 
-int g_playerDir = -1;
-int g_curX = WIDTH/2;
-int g_curY = HEIGHT/2;
+int g_game_status = 0;
+int g_title_selection = 0;
 
-int g_userMoveFrame = 5;
-int g_currentUserMoveFrame = 0;
+int g_player_dir = -1;
+int g_player_x = WIDTH/2;
+int g_player_y = HEIGHT/2;
+
+int g_player_move_frame = 5;
+int g_current_player_move_frame = 0;
 
 char logo[][300] = {
 
@@ -28,60 +31,59 @@ char logo[][300] = {
     "╚═╝░░░░░╚═╝╚══════╝╚═╝░░░░░╚═╝░╚════╝░╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝",
 };
 
-char description[][100] = {
-    "Long, long time ago in the Softsys Class",
-    "A Oliner decided to finish his project in a single day...",
-    "It worked perfectly on the day he presented it...",
-    "Without knowing that the Memory was Leaking!!!",
-    "You accidently compiled his program...",
-    "And now you have to destroy all the leaking memories!"
+char gameover[][300] = {
+    
+    "░██████╗░░█████╗░███╗░░░███╗███████╗░█████╗░██╗░░░██╗███████╗██████╗░",
+    "██╔════╝░██╔══██╗████╗░████║██╔════╝██╔══██╗██║░░░██║██╔════╝██╔══██╗",
+    "██║░░██╗░███████║██╔████╔██║█████╗░░██║░░██║╚██╗░██╔╝█████╗░░██████╔╝",
+    "██║░░╚██╗██╔══██║██║╚██╔╝██║██╔══╝░░██║░░██║░╚████╔╝░██╔══╝░░██╔══██╗",
+    "╚██████╔╝██║░░██║██║░╚═╝░██║███████╗╚█████╔╝░░╚██╔╝░░███████╗██║░░██║",
+    "░╚═════╝░╚═╝░░╚═╝╚═╝░░░░░╚═╝╚══════╝░╚════╝░░░░╚═╝░░░╚══════╝╚═╝░░╚═╝",
 };
 
-void gameplay(WINDOW *win)
+char description[][100] = {
+    "A long time ago in a SoftSys class far, far away...",
+    "An Oliner decided to finish their project in a single day...",
+    "It worked perfectly on the day it was presented...",
+    "Without knowing that the memory was leaking!!!",
+    "You accidentally compiled the program...",
+    "And now you have to free all the leaking memories!"
+};
+
+char selection[][30] = {
+    "Start Game",
+    "Exit Game",
+};
+
+void title(WINDOW *win)
 {
+    //wclear(win);
     werase(win);
     box(win,0,0);
 
     char in = getch();
+    int end = 0;
 
     switch(in)
     {
         case 'w':
-            g_playerDir = 0;
+            g_title_selection -= 1;
             break;
         case 's':
-            g_playerDir = 1;
+            g_title_selection += 1;
             break;
-        case 'a':
-            g_playerDir = 2;
-            break;
-        case 'd':
-            g_playerDir = 3;
+        case '\n':
+            end = 1;
             break;
     }
-    
-    if (g_currentUserMoveFrame == g_userMoveFrame)
+
+    if (g_title_selection == 2)
     {
-        switch(g_playerDir)
-        {
-            case 0:
-                g_curY -= 1;
-                break;
-            case 1:
-                g_curY += 1;
-                break;
-            case 2:
-                g_curX -= 1;
-                break;
-            case 3:
-                g_curX += 1;
-                break;
-        }
-        g_currentUserMoveFrame = 0;
+        g_title_selection = 0;
     }
-    else
+    else if (g_title_selection == -1)
     {
-        g_currentUserMoveFrame += 1;
+        g_title_selection = 1;
     }
     
     flushinp();
@@ -96,9 +98,103 @@ void gameplay(WINDOW *win)
         int xpos = (WIDTH - strlen(description[i]))/2;
         mvwprintw(win, 14+2*i, xpos, description[i]);
     }
+    
+    if (g_title_selection == 0)
+    {
+        int xpos = (WIDTH - strlen(selection[0]))/2;
+        wattron(win,COLOR_PAIR(2));
+        mvwprintw(win, 30, xpos, selection[0]);
+        wattroff(win,COLOR_PAIR(2));
+        xpos = (WIDTH - strlen(selection[1]))/2;
+        mvwprintw(win, 32, xpos, selection[1]);
+    }
+    else
+    {
+        int xpos = (WIDTH - strlen(selection[0]))/2;
+        mvwprintw(win, 30, xpos, selection[0]);
+        xpos = (WIDTH - strlen(selection[1]))/2;
+        wattron(win,COLOR_PAIR(2));
+        mvwprintw(win, 32, xpos, selection[1]);
+        wattroff(win,COLOR_PAIR(2));
+    }
+
+    
+    if (end == 1)
+    {
+        if (g_title_selection == 0)
+        {
+            g_game_status = 2;
+            wclear(win);
+        }
+        else
+        {
+            g_game_status = -1;
+        }
+    }
+    
+    wrefresh(win);
+    usleep(10000);
+}
+
+void resize()
+{
+    clear();
+    mvprintw(1, 1, "Plase resize the window and re-run the program");
+    refresh();
+}
+
+void gameplay(WINDOW *win)
+{
+    //wclear(win);
+    werase(win);
+    box(win,0,0);
+
+    char in = getch();
+
+    switch(in)
+    {
+        case 'w':
+            g_player_dir = 0;
+            break;
+        case 's':
+            g_player_dir = 1;
+            break;
+        case 'a':
+            g_player_dir = 2;
+            break;
+        case 'd':
+            g_player_dir = 3;
+            break;
+    }
+    
+    if (g_current_player_move_frame == g_player_move_frame)
+    {
+        switch(g_player_dir)
+        {
+            case 0:
+                g_player_y -= 1;
+                break;
+            case 1:
+                g_player_y += 1;
+                break;
+            case 2:
+                g_player_x -= 1;
+                break;
+            case 3:
+                g_player_x += 1;
+                break;
+        }
+        g_current_player_move_frame = 0;
+    }
+    else
+    {
+        g_current_player_move_frame += 1;
+    }
+    
+    flushinp();
 
     wattron(win,COLOR_PAIR(1));
-    mvwprintw(win, g_curY, g_curX,"@");
+    mvwprintw(win, g_player_y, g_player_x,"@");
     wattroff(win,COLOR_PAIR(1));
 
     wrefresh(win);
@@ -108,7 +204,6 @@ void gameplay(WINDOW *win)
 int main(int argc, char *argv[]) 
 {
     setlocale(LC_ALL, "");
-    int max_y = 0, max_x = 0;
     initscr();
     cbreak();
 	noecho();             
@@ -118,16 +213,38 @@ int main(int argc, char *argv[])
 
     start_color();
     init_pair(1,COLOR_RED,COLOR_YELLOW);
+    init_pair(2,COLOR_BLACK,COLOR_WHITE);
 
     srand(time(NULL));
 
-    getmaxyx(stdscr, max_y, max_x);
+    getmaxyx(stdscr, g_terminal_y, g_terminal_x);
 
-    WINDOW *win = newwin(HEIGHT,WIDTH,max_y/2-HEIGHT/2, max_x/2-WIDTH/2);
+    WINDOW *win;
 
-    while(1)
+    if (g_terminal_x < WIDTH || g_terminal_y < HEIGHT)
     {
-        gameplay(win);
+        nodelay(stdscr, 0);
+        resize();
+    }
+    else
+    {
+        win = newwin(HEIGHT,WIDTH,g_terminal_y/2-HEIGHT/2, g_terminal_x/2-WIDTH/2);
+        g_game_status = 1;
+    }
+
+    while(g_game_status > 0)
+    {
+        getmaxyx(stdscr, g_terminal_y, g_terminal_x);
+        mvwin(win,g_terminal_y/2-HEIGHT/2, g_terminal_x/2-WIDTH/2);
+
+        if (g_game_status == 1)
+        {
+            title(win);
+        }
+        else if (g_game_status == 2)
+        {
+            gameplay(win);
+        }
     }
 
 	getch();
