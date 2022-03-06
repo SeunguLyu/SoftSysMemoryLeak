@@ -11,8 +11,10 @@
 
 struct Enemy
 {
+    int live;
     int x;
     int y;
+    int current_move_frame;
 };
 
 int g_terminal_y = 0, g_terminal_x = 0;
@@ -26,6 +28,8 @@ int g_player_y = HEIGHT/2;
 
 int g_player_move_frame = 10;
 int g_current_player_move_frame = 0;
+int g_player_attack_frame = 50;
+int g_current_player_attack_frame = 0;
 
 struct Enemy g_enemies[1000];
 
