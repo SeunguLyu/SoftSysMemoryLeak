@@ -1,21 +1,4 @@
-#include <time.h>
-#include <ncurses.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <locale.h>
-
-#define WIDTH 100
-#define HEIGHT 40
-
-struct Enemy
-{
-    int live;
-    int x;
-    int y;
-    int current_move_frame;
-};
+#include "game.h"
 
 int g_terminal_y = 0, g_terminal_x = 0;
 
@@ -301,60 +284,4 @@ void initialize_colors()
     init_pair(3,COLOR_MAGENTA,COLOR_BLACK);
     init_pair(4,COLOR_YELLOW,COLOR_BLACK);
     init_pair(5,COLOR_RED,COLOR_BLACK);
-}
-
-int main(int argc, char *argv[]) 
-{
-    setlocale(LC_ALL, "");
-    initscr();
-    cbreak();
-	noecho();             
-	keypad(stdscr, TRUE); 
-	curs_set(0); 
-    nodelay(stdscr, 1);
-
-    initialize_colors();
-
-    srand(time(NULL));
-
-    getmaxyx(stdscr, g_terminal_y, g_terminal_x);
-
-    WINDOW *win;
-
-    g_enemies[0].x = 15;
-    g_enemies[0].y = 15;
-
-    if (g_terminal_x < WIDTH || g_terminal_y < HEIGHT)
-    {
-        nodelay(stdscr, 0);
-        resize();
-    }
-    else
-    {
-        win = newwin(HEIGHT,WIDTH,g_terminal_y/2-HEIGHT/2, g_terminal_x/2-WIDTH/2);
-        g_game_status = 1;
-    }
-
-    while(g_game_status > 0)
-    {
-        getmaxyx(stdscr, g_terminal_y, g_terminal_x);
-        mvwin(win,g_terminal_y/2-HEIGHT/2, g_terminal_x/2-WIDTH/2);
-
-        if (g_game_status == 1)
-        {
-            title(win);
-        }
-        else if (g_game_status == 2)
-        {
-            gameplay(win);
-        }
-        else if (g_game_status == 3)
-        {
-            gameover(win);
-        }
-    }
-
-	getch();
-	endwin();
-	return 0;
 }
