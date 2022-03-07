@@ -8,6 +8,7 @@
 
 #define WIDTH 100
 #define HEIGHT 40
+#define DELAY 10000
 
 struct Enemy
 {
@@ -26,3 +27,5 @@ void initialize_colors();
 void draw_player(WINDOW *win);
 void draw_enemies(WINDOW *win);
 void player_enemy_collision_check();
+void draw_rectangle(WINDOW *win, int y1, int x1, int y2, int x2);
+void draw_score_UI(WINDOW *win);

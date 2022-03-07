@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 
     getmaxyx(stdscr, g_terminal_y, g_terminal_x);
 
-    WINDOW *win;
+    WINDOW *main_window;
 
     if (g_terminal_x < WIDTH || g_terminal_y < HEIGHT)
     {
@@ -30,26 +30,26 @@ int main(int argc, char *argv[])
     }
     else
     {
-        win = newwin(HEIGHT,WIDTH,g_terminal_y/2-HEIGHT/2, g_terminal_x/2-WIDTH/2);
+        main_window = newwin(HEIGHT,WIDTH,g_terminal_y/2-HEIGHT/2, g_terminal_x/2-WIDTH/2);
         g_game_status = 1;
     }
 
     while(g_game_status > 0)
     {
         getmaxyx(stdscr, g_terminal_y, g_terminal_x);
-        mvwin(win,g_terminal_y/2-HEIGHT/2, g_terminal_x/2-WIDTH/2);
+        //mvwin(main_window,g_terminal_y/2-HEIGHT/2, g_terminal_x/2-WIDTH/2);
 
         if (g_game_status == 1)
         {
-            title(win);
+            title(main_window);
         }
         else if (g_game_status == 2)
         {
-            gameplay(win);
+            gameplay(main_window);
         }
         else if (g_game_status == 3)
         {
-            gameover(win);
+            gameover(main_window);
         }
     }
 

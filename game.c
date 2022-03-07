@@ -7,12 +7,17 @@ int g_title_selection = 0;
 
 int g_player_dir = -1;
 int g_player_x = WIDTH/2;
-int g_player_y = HEIGHT/2;
+int g_player_y = (HEIGHT-6)/2 + 6;
 
 int g_player_move_frame = 10;
 int g_current_player_move_frame = 0;
 int g_player_attack_frame = 50;
 int g_current_player_attack_frame = 0;
+
+int g_current_pow = 0;
+int g_current_spd = 0;
+int g_current_score = 0;
+
 
 struct Enemy g_enemies[1000];
 
@@ -144,7 +149,7 @@ void title(WINDOW *win)
     }
     
     wrefresh(win);
-    usleep(10000);
+    usleep(DELAY);
 }
 
 void gameover(WINDOW *win)
@@ -175,7 +180,7 @@ void gameover(WINDOW *win)
     nodelay(stdscr, 0);
     
     wrefresh(win);
-    usleep(10000);
+    usleep(DELAY);
 }
 
 void resize()
@@ -195,12 +200,12 @@ void draw_player(WINDOW *win)
 
 void draw_enemies(WINDOW *win)
 {
-    wattron(win,COLOR_PAIR(5));
-    for (int i = 0; i < 1; i++)
-    {
-        mvwprintw(win, g_enemies[i].y, g_enemies[i].x,"Ⓜ");
-    }
-    wattroff(win,COLOR_PAIR(5));
+    // wattron(win,COLOR_PAIR(5));
+    // for (int i = 0; i < 1; i++)
+    // {
+    //     mvwprintw(win, g_enemies[i].y, g_enemies[i].x,"Ⓜ");
+    // }
+    // wattroff(win,COLOR_PAIR(5));
 }
 
 void player_enemy_collision_check()
@@ -214,11 +219,48 @@ void player_enemy_collision_check()
     }
 }
 
+void draw_rectangle(WINDOW *win, int y1, int x1, int y2, int x2)
+{
+    mvwhline(win, y1, x1, 0, x2-x1);
+    mvwhline(win, y2, x1, 0, x2-x1);
+    mvwvline(win, y1, x1, 0, y2-y1);
+    mvwvline(win, y1, x2, 0, y2-y1);
+    mvwaddch(win, y1, x1, ACS_ULCORNER);
+    mvwaddch(win, y2, x1, ACS_LLCORNER);
+    mvwaddch(win, y1, x2, ACS_URCORNER);
+    mvwaddch(win, y2, x2, ACS_LRCORNER);
+}
+
+void draw_score_UI(WINDOW *win)
+{
+    mvwhline(win, 6, 1, 0, WIDTH-2);
+    draw_rectangle(win, 1, 2, 5, WIDTH - 3);
+
+    wattron(win,COLOR_PAIR(5));
+    mvwprintw(win, 3, 9,"POW ■□□□□□□□");
+    wattroff(win,COLOR_PAIR(5));
+
+    mvwvline(win, 2, 35, 0, 3);
+
+    wattron(win,COLOR_PAIR(4));
+    mvwprintw(win, 3, 42,"SPD ■□□□□□□□");
+    wattroff(win,COLOR_PAIR(4));
+
+    mvwvline(win, 2, 68, 0, 3);
+
+    wattron(win,COLOR_PAIR(3));
+    mvwprintw(win, 3, 75,"SCORE 0 0 0 0 0 0");
+    wattroff(win,COLOR_PAIR(3));
+}
+
 void gameplay(WINDOW *win)
 {
     //wclear(win);
     werase(win);
+
     box(win,0,0);
+    
+    draw_score_UI(win);
 
     char in = getch();
 
@@ -243,7 +285,7 @@ void gameplay(WINDOW *win)
         switch(g_player_dir)
         {
             case 0:
-                if (g_player_y > 1)
+                if (g_player_y > 7)
                     g_player_y -= 1;
                 break;
             case 1:
@@ -273,7 +315,7 @@ void gameplay(WINDOW *win)
     player_enemy_collision_check();
 
     wrefresh(win);
-    usleep(10000);
+    usleep(DELAY);
 }
 
 void initialize_colors()
