@@ -9,6 +9,7 @@
 #define WIDTH 100
 #define HEIGHT 40
 #define DELAY 10000
+#define MAX_ENEMY 1000
 
 struct Enemy
 {
@@ -23,6 +24,7 @@ void gameover(WINDOW *win);
 void resize();
 void gameplay(WINDOW *win);
 void initialize_colors();
+void spawn_enemy();
 
 void draw_player(WINDOW *win);
 void draw_enemies(WINDOW *win);

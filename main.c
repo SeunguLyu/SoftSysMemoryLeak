@@ -19,6 +19,8 @@ int main(int argc, char *argv[])
 
     srand(time(NULL));
 
+    spawn_enemy();
+
     getmaxyx(stdscr, g_terminal_y, g_terminal_x);
 
     WINDOW *main_window;

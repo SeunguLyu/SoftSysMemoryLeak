@@ -11,15 +11,19 @@ int g_player_y = (HEIGHT-6)/2 + 6;
 
 int g_player_move_frame = 10;
 int g_current_player_move_frame = 0;
-int g_player_attack_frame = 50;
+int g_player_attack_frame = 30;
 int g_current_player_attack_frame = 0;
 
 int g_current_pow = 0;
 int g_current_spd = 0;
 int g_current_score = 0;
 
+int g_spawn_frame = 10;
+int g_current_spawn_frame = 0;
 
-struct Enemy g_enemies[1000];
+int g_enemy_position_map[WIDTH][HEIGHT];
+
+struct Enemy g_enemies[MAX_ENEMY];
 
 const char TITLE_LOGO[][300] = {
 
@@ -200,22 +204,38 @@ void draw_player(WINDOW *win)
 
 void draw_enemies(WINDOW *win)
 {
-    // wattron(win,COLOR_PAIR(5));
-    // for (int i = 0; i < 1; i++)
-    // {
-    //     mvwprintw(win, g_enemies[i].y, g_enemies[i].x,"Ⓜ");
-    // }
-    // wattroff(win,COLOR_PAIR(5));
+    wattron(win,COLOR_PAIR(5));
+    for (int i = 0; i < MAX_ENEMY; i++)
+    {
+        if (g_enemies[i].live == 1)
+        {
+            mvwprintw(win, g_enemies[i].y, g_enemies[i].x,"⚉");
+        }
+    }
+    wattroff(win,COLOR_PAIR(5));
 }
 
 void player_enemy_collision_check()
 {
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < MAX_ENEMY; i++)
     {
         if (g_enemies[i].x == g_player_x && g_enemies[i].y == g_player_y)
         {
             g_game_status = 3;
         }
+    }
+}
+
+void spawn_enemy()
+{
+    time_t t;
+    srand((unsigned) time(&t));
+
+    for (int i = 0; i<100; i++)
+    {
+        g_enemies[i].live = 1;
+        g_enemies[i].x = 2+(rand() % (WIDTH-4));
+        g_enemies[i].y = 8+(rand() % (HEIGHT-10));
     }
 }
 
@@ -309,6 +329,8 @@ void gameplay(WINDOW *win)
     }
     
     flushinp();
+
+    //spawn_enemy();
 
     draw_enemies(win);
     draw_player(win);
