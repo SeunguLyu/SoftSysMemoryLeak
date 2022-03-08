@@ -22,9 +22,9 @@ The current state of the project is almost at MVP, where there is collision dete
 The resources we used to build the project were mostly stack-overflow and looking at an existing project that uses the ncurses library to implement games with C such as [Tetris](https://github.com/brenns10/tetris). Most of our time was used to understand how to use ncurses, looking at some documentation such as [Ncurses HOWTO](https://tldp.org/HOWTO/NCURSES-Programming-HOWTO/). Ncurses is such an old library that there is too much information about it on the web, that finding the right type of information was a bit challenging sometimes.
 
 ## Next Steps
-1. Add bullets that will shoot automatically. The direction of the bullet rotates clockwise, enabling the user to cover all 8 sides.
-2. Create a smart spawn system that will make sure that enemies/spawns/power-ups/player isn't at the same position.
-3. Create simple AI so that enemies can slowly approach the player.
+1. Add bullets that will shoot automatically. The direction of the bullet rotates clockwise, enabling the user to cover all 8 sides. The task is done if the bullet can delete the enemy when hit.
+2. Create a smart spawn system that will make sure that enemies/spawns/power-ups/player isn't at the same position. The task is done when the game can track where all the objects are and avoid creating something in the same position.
+3. Create simple AI so that enemies can slowly approach the player. The task is done if the enemies do not randomly move around but show a clear pattern.
 
 ## Links
 [Todoist](https://todoist.com/app/project/2285818211)
