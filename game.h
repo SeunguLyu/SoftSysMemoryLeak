@@ -25,6 +25,7 @@ void resize();
 void gameplay(WINDOW *win);
 void initialize_colors();
 void spawn_enemy();
+void enemy_move();
 
 void draw_player(WINDOW *win);
 void draw_enemies(WINDOW *win);

@@ -14,14 +14,16 @@ int g_current_player_move_frame = 0;
 int g_player_attack_frame = 30;
 int g_current_player_attack_frame = 0;
 
+int g_enemy_move_frame = 30;
+
 int g_current_pow = 0;
 int g_current_spd = 0;
 int g_current_score = 0;
 
-int g_spawn_frame = 10;
+int g_spawn_frame = 50;
 int g_current_spawn_frame = 0;
 
-int g_enemy_position_map[WIDTH][HEIGHT];
+int g_position_map[WIDTH][HEIGHT];
 
 struct Enemy g_enemies[MAX_ENEMY];
 
@@ -226,16 +228,123 @@ void player_enemy_collision_check()
     }
 }
 
+void enemy_move()
+{
+    for (int i = 0; i<MAX_ENEMY; i++)
+    {
+        if (g_enemies[i].live == 1)
+        {
+            if (g_enemies[i].current_move_frame == g_enemy_move_frame)
+            {
+                int x_axis, y_axis;
+                int x,y;
+
+                x_axis = g_player_x - g_enemies[i].x;
+                y_axis = g_player_y - g_enemies[i].y;
+
+                x_axis = x_axis/abs(x_axis);
+                y_axis = y_axis/abs(y_axis);
+
+                if (x_axis != 0 && y_axis != 0)
+                {
+                    switch(rand() % 2)
+                    {
+                        case 0:
+                            x = g_enemies[i].x + x_axis;
+                            y = g_enemies[i].y;
+                            break;
+                        case 1:
+                            x = g_enemies[i].x;
+                            y = g_enemies[i].y + y_axis;
+                            break;
+                    }
+                }
+                else if (x_axis != 0)
+                {
+                    x = g_enemies[i].x + x_axis;
+                    y = g_enemies[i].y;
+                }
+                else
+                {
+                    x = g_enemies[i].x;
+                    y = g_enemies[i].y + y_axis;
+                }
+
+                if (g_position_map[x][y] == 0)
+                {
+                    g_position_map[g_enemies[i].x][g_enemies[i].y] = 0;
+                    g_enemies[i].x = x;
+                    g_enemies[i].y = y;
+                    g_position_map[x][y] = 1;
+
+                    g_enemies[i].current_move_frame = 0;
+                }
+            }
+            else
+            {
+                g_enemies[i].current_move_frame += 1;
+            }
+        }
+    }
+}
+
 void spawn_enemy()
 {
-    time_t t;
-    srand((unsigned) time(&t));
-
-    for (int i = 0; i<100; i++)
+    if (g_current_spawn_frame == g_spawn_frame)
     {
-        g_enemies[i].live = 1;
-        g_enemies[i].x = 2+(rand() % (WIDTH-4));
-        g_enemies[i].y = 8+(rand() % (HEIGHT-10));
+        int empty;
+        for (int i = 0; i<MAX_ENEMY; i++)
+        {
+            if (g_enemies[i].live == 0)
+            {
+                empty = i;
+                break;
+            }
+            else if (i == MAX_ENEMY - 1)
+            {
+                return;
+            }
+        }
+
+        int x,y;
+        int pattern;
+
+        pattern = rand() % 4;
+
+        switch(pattern)
+        {
+            case 0:
+                x = 2;
+                y = 7+(rand() % (HEIGHT-8));
+                break;
+            case 1:
+                x = 2+(rand() % (WIDTH-4));
+                y = 7;
+                break;
+            case 2:
+                x = WIDTH - 3;
+                y = 7+(rand() % (HEIGHT-8));
+                break;
+            case 3:
+                x = 2+(rand() % (WIDTH-4));
+                y = HEIGHT - 2;
+                break;
+        }
+
+        if (g_position_map[x][y] == 0)
+        {
+            g_enemies[empty].live = 1;
+            g_enemies[empty].x = x;
+            g_enemies[empty].y = y;
+
+            g_position_map[x][y] = 1;
+
+            g_current_spawn_frame = 0;
+        }
+    }
+    else
+    {
+        g_current_spawn_frame += 1;
     }
 }
 
@@ -330,7 +439,9 @@ void gameplay(WINDOW *win)
     
     flushinp();
 
-    //spawn_enemy();
+    spawn_enemy();
+    enemy_move();
+    //mvwprintw(win, 1, 1, "%i", g_retry);
 
     draw_enemies(win);
     draw_player(win);
