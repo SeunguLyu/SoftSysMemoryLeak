@@ -246,7 +246,27 @@ void player_enemy_collision_check()
 
 void bullet_enemy_collision_check()
 {
-
+    for (int i = 0; i < MAX_ENEMY; i++)
+    {
+        if (g_enemies[i].live == 0)
+        {
+            continue;
+        }
+        for (int j = 0; j < MAX_BULLET; j++)
+        {
+            if (g_bullet[j].live == 0)
+            {
+                continue;
+            }
+            if (g_bullet[j].x == g_enemies[i].x && g_bullet[j].y == g_enemies[i].y)
+            {
+                g_enemies[i].live = 0;
+                g_bullet[j].live = 0;
+                g_current_score += 10;
+                break;
+            }
+        }
+    }
 }
 
 void enemy_move()
@@ -431,6 +451,7 @@ void spawn_enemy()
             g_enemies[empty].live = 1;
             g_enemies[empty].x = x;
             g_enemies[empty].y = y;
+            g_enemies[empty].current_move_frame = 0;
 
             g_enemy_position_map[x][y] = 1;
 
@@ -461,6 +482,7 @@ void spawn_bullet()
                 }
                 else if (i == MAX_BULLET - 1)
                 {
+                    g_current_bullet_spawn_frame = 0;
                     return;
                 }
             }
@@ -518,7 +540,7 @@ void spawn_bullet()
 
             current_dir += 1;
 
-            if (current_dir == 8)
+            if (current_dir >= 8)
             {
                 current_dir = 0;
             }
@@ -527,7 +549,7 @@ void spawn_bullet()
         g_current_bullet_spawn_frame = 0;
         g_bullet_dir += 1;
 
-        if (g_bullet_dir == 8)
+        if (g_bullet_dir >= 8)
         {
             g_bullet_dir = 0;
         }
@@ -556,19 +578,79 @@ void draw_score_UI(WINDOW *win)
     draw_rectangle(win, 1, 2, 5, WIDTH - 3);
 
     wattron(win,COLOR_PAIR(5));
-    mvwprintw(win, 3, 9,"POW ■□□□□□□□");
+    switch(g_current_pow)
+    {
+        case 1:
+            mvwprintw(win, 3, 9,"POW ■□□□□□□□");
+            break;
+        case 2:
+            mvwprintw(win, 3, 9,"POW ■■□□□□□□");
+            break;
+        case 3:
+            mvwprintw(win, 3, 9,"POW ■■■□□□□□");
+            break;
+        case 4:
+            mvwprintw(win, 3, 9,"POW ■■■■□□□□");
+            break;
+        case 5:
+            mvwprintw(win, 3, 9,"POW ■■■■■□□□");
+            break;
+        case 6:
+            mvwprintw(win, 3, 9,"POW ■■■■■■□□");
+            break;
+        case 7:
+            mvwprintw(win, 3, 9,"POW ■■■■■■■□");
+            break;
+        case 8:
+            mvwprintw(win, 3, 9,"POW ■■■■■■■■");
+            break;
+    }
     wattroff(win,COLOR_PAIR(5));
 
     mvwvline(win, 2, 35, 0, 3);
 
     wattron(win,COLOR_PAIR(4));
-    mvwprintw(win, 3, 42,"SPD ■□□□□□□□");
+    switch(g_current_spd)
+    {
+        case 1:
+            mvwprintw(win, 3, 42,"SPD ■□□□□□□□");
+            break;
+        case 2:
+            mvwprintw(win, 3, 42,"SPD ■■□□□□□□");
+            break;
+        case 3:
+            mvwprintw(win, 3, 42,"SPD ■■■□□□□□");
+            break;
+        case 4:
+            mvwprintw(win, 3, 42,"SPD ■■■■□□□□");
+            break;
+        case 5:
+            mvwprintw(win, 3, 42,"SPD ■■■■■□□□");
+            break;
+        case 6:
+            mvwprintw(win, 3, 42,"SPD ■■■■■■□□");
+            break;
+        case 7:
+            mvwprintw(win, 3, 42,"SPD ■■■■■■■□");
+            break;
+        case 8:
+            mvwprintw(win, 3, 42,"SPD ■■■■■■■■");
+            break;
+    }
     wattroff(win,COLOR_PAIR(4));
 
     mvwvline(win, 2, 68, 0, 3);
 
+    char score[] = "SCORE 0 0 0 0 0 0";
+
+    score[6] = g_current_score/100000 +'0';
+    score[8] = g_current_score/10000 +'0';
+    score[10] = g_current_score/1000 +'0';
+    score[12] = g_current_score/100 +'0';
+    score[14] = g_current_score/10 +'0';
+    score[16] = g_current_score%10 +'0';
     wattron(win,COLOR_PAIR(3));
-    mvwprintw(win, 3, 75,"SCORE 0 0 0 0 0 0");
+    mvwprintw(win, 3, 75,"%s", score);
     wattroff(win,COLOR_PAIR(3));
 }
 

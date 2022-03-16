@@ -10,7 +10,7 @@
 #define HEIGHT 40
 #define DELAY 10000
 #define MAX_ENEMY 500
-#define MAX_BULLET 30
+#define MAX_BULLET 100
 
 typedef struct Enemy
 {
