@@ -9,23 +9,26 @@ int g_player_dir = -1;
 int g_player_x = WIDTH/2;
 int g_player_y = (HEIGHT-6)/2 + 6;
 
-int g_player_move_frame = 10;
+int g_player_move_frame = 20;
 int g_current_player_move_frame = 0;
 int g_player_attack_frame = 30;
 int g_current_player_attack_frame = 0;
 
-int g_enemy_move_frame = 30;
-
-int g_current_pow = 0;
-int g_current_spd = 0;
+int g_current_pow = 8;
+int g_current_spd = 1;
 int g_current_score = 0;
 
-int g_spawn_frame = 50;
-int g_current_spawn_frame = 0;
+int g_enemy_move_frame = 50;
+int g_enemy_spawn_frame = 300;
+int g_current_enemy_spawn_frame = 0;
+Enemy g_enemies[MAX_ENEMY];
+int g_enemy_position_map[WIDTH][HEIGHT];
 
-int g_position_map[WIDTH][HEIGHT];
-
-struct Enemy g_enemies[MAX_ENEMY];
+int g_bullet_move_frame = 5;
+int g_bullet_spawn_frame = 100;
+int g_current_bullet_spawn_frame = 0;
+int g_bullet_dir = 0;
+Bullet g_bullet[MAX_BULLET];
 
 const char TITLE_LOGO[][300] = {
 
@@ -217,15 +220,33 @@ void draw_enemies(WINDOW *win)
     wattroff(win,COLOR_PAIR(5));
 }
 
+void draw_bullets(WINDOW *win)
+{
+    wattron(win,COLOR_PAIR(4));
+    for (int i = 0; i < MAX_BULLET; i++)
+    {
+        if (g_bullet[i].live == 1)
+        {
+            mvwprintw(win, g_bullet[i].y, g_bullet[i].x,"•");
+        }
+    }
+    wattroff(win,COLOR_PAIR(4));
+}
+
 void player_enemy_collision_check()
 {
     for (int i = 0; i < MAX_ENEMY; i++)
     {
-        if (g_enemies[i].x == g_player_x && g_enemies[i].y == g_player_y)
+        if (g_enemies[i].x == g_player_x && g_enemies[i].y == g_player_y && g_enemies[i].live == 1)
         {
             g_game_status = 3;
         }
     }
+}
+
+void bullet_enemy_collision_check()
+{
+
 }
 
 void enemy_move()
@@ -264,18 +285,23 @@ void enemy_move()
                     x = g_enemies[i].x + x_axis;
                     y = g_enemies[i].y;
                 }
-                else
+                else if (y_axis != 0)
                 {
                     x = g_enemies[i].x;
                     y = g_enemies[i].y + y_axis;
                 }
 
-                if (g_position_map[x][y] == 0)
+                if (x == 1 || x == (WIDTH - 1) || y == 6 || y == (HEIGHT - 1))
                 {
-                    g_position_map[g_enemies[i].x][g_enemies[i].y] = 0;
+                    continue;
+                }
+
+                if (g_enemy_position_map[x][y] == 0)
+                {
+                    g_enemy_position_map[g_enemies[i].x][g_enemies[i].y] = 0;
                     g_enemies[i].x = x;
                     g_enemies[i].y = y;
-                    g_position_map[x][y] = 1;
+                    g_enemy_position_map[x][y] = 1;
 
                     g_enemies[i].current_move_frame = 0;
                 }
@@ -288,9 +314,78 @@ void enemy_move()
     }
 }
 
+void bullet_move()
+{
+    for (int i = 0; i<MAX_BULLET; i++)
+    {
+        if (g_bullet[i].live == 1)
+        {
+            if (g_bullet[i].current_move_frame == g_bullet_move_frame)
+            {
+                int x,y;
+                x = g_bullet[i].x;
+                y = g_bullet[i].y;
+                switch(g_bullet[i].dir)
+                {
+                    case 0:
+                        y -= 1;
+                        break;
+                    case 1:
+                        x += 1;
+                        y -= 1;
+                        break;
+                    case 2:
+                        x += 1;
+                        break;
+                    case 3:
+                        x += 1;
+                        y += 1;
+                        break;
+                    case 4:
+                        y += 1;
+                        break;
+                    case 5:
+                        x -= 1;
+                        y += 1;
+                        break;
+                    case 6:
+                        x -= 1;
+                        break;
+                    case 7:
+                        x -= 1;
+                        y -= 1;
+                        break;
+                }
+
+                if (x == 1 || x == (WIDTH - 1) || y == 6 || y == (HEIGHT - 1))
+                {
+                    g_bullet[i].live = 0;
+                }
+                else
+                {
+                    g_bullet[i].x = x;
+                    g_bullet[i].y = y;
+                    g_bullet[i].travel_distance += 1;
+                    g_bullet[i].current_move_frame = 0;
+                }
+
+                if (g_bullet[i].travel_distance == g_current_pow * 2 + 4)
+                {
+                    g_bullet[i].live = 0;
+                }
+                
+            }
+            else
+            {
+                g_bullet[i].current_move_frame += 1;
+            }
+        }
+    }
+}
+
 void spawn_enemy()
 {
-    if (g_current_spawn_frame == g_spawn_frame)
+    if (g_current_enemy_spawn_frame == g_enemy_spawn_frame)
     {
         int empty;
         for (int i = 0; i<MAX_ENEMY; i++)
@@ -327,24 +422,119 @@ void spawn_enemy()
                 break;
             case 3:
                 x = 2+(rand() % (WIDTH-4));
-                y = HEIGHT - 2;
+                y = HEIGHT - 3;
                 break;
         }
 
-        if (g_position_map[x][y] == 0)
+        if (g_enemy_position_map[x][y] == 0)
         {
             g_enemies[empty].live = 1;
             g_enemies[empty].x = x;
             g_enemies[empty].y = y;
 
-            g_position_map[x][y] = 1;
+            g_enemy_position_map[x][y] = 1;
 
-            g_current_spawn_frame = 0;
+            g_current_enemy_spawn_frame = 0;
         }
     }
     else
     {
-        g_current_spawn_frame += 1;
+        g_current_enemy_spawn_frame += 1;
+    }
+}
+
+void spawn_bullet()
+{
+    if (g_current_bullet_spawn_frame == g_bullet_spawn_frame)
+    {
+        int current_dir = g_bullet_dir;
+
+        for (int j = 0; j <g_current_pow; j++)
+        {
+            int empty;
+            for (int i = 0; i<MAX_BULLET; i++)
+            {
+                if (g_bullet[i].live == 0)
+                {
+                    empty = i;
+                    break;
+                }
+                else if (i == MAX_BULLET - 1)
+                {
+                    return;
+                }
+            }
+
+            int x, y;
+
+            x = g_player_x;
+            y = g_player_y;
+
+            switch(current_dir)
+            {
+                case 0:
+                    y -= 1;
+                    break;
+                case 1:
+                    x += 1;
+                    y -= 1;
+                    break;
+                case 2:
+                    x += 1;
+                    break;
+                case 3:
+                    x += 1;
+                    y += 1;
+                    break;
+                case 4:
+                    y += 1;
+                    break;
+                case 5:
+                    x -= 1;
+                    y += 1;
+                    break;
+                case 6:
+                    x -= 1;
+                    break;
+                case 7:
+                    x -= 1;
+                    y -= 1;
+                    break;
+            }
+
+            if (x == 1 || x == (WIDTH - 1) || y == 6 || y == (HEIGHT - 1))
+            {
+
+            }
+            else
+            {
+                g_bullet[empty].live = 1;
+                g_bullet[empty].dir = current_dir;
+                g_bullet[empty].current_move_frame = 0;
+                g_bullet[empty].travel_distance = 0;
+                g_bullet[empty].x = x;
+                g_bullet[empty].y = y;
+            }
+
+            current_dir += 1;
+
+            if (current_dir == 8)
+            {
+                current_dir = 0;
+            }
+        }
+
+        g_current_bullet_spawn_frame = 0;
+        g_bullet_dir += 1;
+
+        if (g_bullet_dir == 8)
+        {
+            g_bullet_dir = 0;
+        }
+    }
+    else
+    {
+        g_current_bullet_spawn_frame += 1;
     }
 }
 
@@ -441,11 +631,15 @@ void gameplay(WINDOW *win)
 
     spawn_enemy();
     enemy_move();
-    //mvwprintw(win, 1, 1, "%i", g_retry);
+
+    spawn_bullet();
+    bullet_move();
 
     draw_enemies(win);
     draw_player(win);
+    draw_bullets(win);
     player_enemy_collision_check();
+    bullet_enemy_collision_check();
 
     wrefresh(win);
     usleep(DELAY);
