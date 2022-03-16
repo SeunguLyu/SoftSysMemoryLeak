@@ -255,7 +255,7 @@ void enemy_move()
     {
         if (g_enemies[i].live == 1)
         {
-            if (g_enemies[i].current_move_frame == g_enemy_move_frame)
+            if (g_enemies[i].current_move_frame >= g_enemy_move_frame)
             {
                 int x_axis, y_axis;
                 int x,y;
@@ -320,7 +320,7 @@ void bullet_move()
     {
         if (g_bullet[i].live == 1)
         {
-            if (g_bullet[i].current_move_frame == g_bullet_move_frame)
+            if (g_bullet[i].current_move_frame >= g_bullet_move_frame)
             {
                 int x,y;
                 x = g_bullet[i].x;
@@ -385,7 +385,7 @@ void bullet_move()
 
 void spawn_enemy()
 {
-    if (g_current_enemy_spawn_frame == g_enemy_spawn_frame)
+    if (g_current_enemy_spawn_frame >= g_enemy_spawn_frame)
     {
         int empty;
         for (int i = 0; i<MAX_ENEMY; i++)
@@ -445,7 +445,7 @@ void spawn_enemy()
 
 void spawn_bullet()
 {
-    if (g_current_bullet_spawn_frame == g_bullet_spawn_frame)
+    if (g_current_bullet_spawn_frame >= g_bullet_spawn_frame)
     {
         int current_dir = g_bullet_dir;
 
@@ -599,7 +599,7 @@ void gameplay(WINDOW *win)
             break;
     }
     
-    if (g_current_player_move_frame == g_player_move_frame)
+    if (g_current_player_move_frame >= g_player_move_frame)
     {
         switch(g_player_dir)
         {
