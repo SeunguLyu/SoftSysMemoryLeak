@@ -643,12 +643,20 @@ void draw_score_UI(WINDOW *win)
 
     char score[] = "SCORE 0 0 0 0 0 0";
 
-    score[6] = g_current_score/100000 +'0';
-    score[8] = g_current_score/10000 +'0';
-    score[10] = g_current_score/1000 +'0';
-    score[12] = g_current_score/100 +'0';
-    score[14] = g_current_score/10 +'0';
-    score[16] = g_current_score%10 +'0';
+    int score_value = g_current_score;
+
+    score[6] = score_value/100000 +'0';
+    score_value = score_value%100000;
+    score[8] = score_value/10000 +'0';
+    score_value = score_value%10000;
+    score[10] = score_value/1000 +'0';
+    score_value = score_value%1000;
+    score[12] = score_value/100 +'0';
+    score_value = score_value%100;
+    score[14] = score_value/10 +'0';
+    score_value = score_value%10;
+    score[16] = score_value +'0';
+    
     wattron(win,COLOR_PAIR(3));
     mvwprintw(win, 3, 75,"%s", score);
     wattroff(win,COLOR_PAIR(3));
