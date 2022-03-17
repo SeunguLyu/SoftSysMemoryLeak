@@ -30,6 +30,8 @@ Bullet g_bullet[MAX_BULLET];
 
 PowerUp g_pow_up;
 PowerUp g_spd_up;
+int g_power_up_color_frame = 100;
+int g_current_power_up_color_frame = 0;
 
 int g_score_up_frame = MAX_SCORE_UP_FRAME;
 int g_current_score_up_frame = 0;
@@ -273,14 +275,62 @@ void draw_bullets(WINDOW *win)
 
 void draw_pow_up(WINDOW *win)
 {
+    if (g_current_power_up_color_frame >= g_power_up_color_frame)
+    {
+        int current_color = g_pow_up.color;
+        do
+        {
+            switch(rand() % 3)
+            {
+                case 0:
+                    g_pow_up.color = 6;
+                    break;
+                case 1:
+                    g_pow_up.color = 7;
+                    break;
+                case 2:
+                    g_pow_up.color = 8;
+                    break;
+            }
+        }
+        while(g_pow_up.color == current_color);
+        
+        current_color = g_spd_up.color;
+        do
+        {
+            switch(rand() % 3)
+            {
+                case 0:
+                    g_spd_up.color = 6;
+                    break;
+                case 1:
+                    g_spd_up.color = 7;
+                    break;
+                case 2:
+                    g_spd_up.color = 8;
+                    break;
+            }
+        }
+        while(g_spd_up.color == current_color);
+        g_current_power_up_color_frame = 0;
+    }
+    else
+    {
+        g_current_power_up_color_frame += 1;
+    }
+
     if (g_pow_up.live == 1)
     {
+        wattron(win,COLOR_PAIR(g_pow_up.color));
         mvwprintw(win, g_pow_up.y, g_pow_up.x,"P");
+        wattroff(win,COLOR_PAIR(g_pow_up.color));
     }
 
     if (g_spd_up.live == 1)
     {
+        wattron(win,COLOR_PAIR(g_spd_up.color));
         mvwprintw(win, g_spd_up.y, g_spd_up.x,"S");
+        wattroff(win,COLOR_PAIR(g_spd_up.color));
     }
 }
 
@@ -659,6 +709,7 @@ void spawn_power_up(int type)
         g_pow_up.live = 1;
         g_pow_up.x = x;
         g_pow_up.y = y;
+        g_pow_up.color = 6;
     }
     else if (type == 1)
     {
@@ -673,6 +724,7 @@ void spawn_power_up(int type)
         g_spd_up.live = 1;
         g_spd_up.x = x;
         g_spd_up.y = y;
+        g_spd_up.color = 6;
     }
 }
 
@@ -898,4 +950,7 @@ void initialize_colors()
     init_pair(3,COLOR_MAGENTA,COLOR_BLACK);
     init_pair(4,COLOR_YELLOW,COLOR_BLACK);
     init_pair(5,COLOR_RED,COLOR_BLACK);
+    init_pair(6,COLOR_MAGENTA,COLOR_BLACK);
+    init_pair(7,COLOR_BLUE,COLOR_BLACK);
+    init_pair(8,COLOR_GREEN,COLOR_BLACK);
 }
