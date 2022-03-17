@@ -9,26 +9,30 @@ int g_player_dir = -1;
 int g_player_x = WIDTH/2;
 int g_player_y = (HEIGHT-6)/2 + 6;
 
-int g_player_move_frame = 20;
+int g_player_move_frame = MAX_PLAYER_MOVE_FRAME;
 int g_current_player_move_frame = 0;
-int g_player_attack_frame = 30;
-int g_current_player_attack_frame = 0;
 
-int g_current_pow = 8;
-int g_current_spd = 1;
+int g_current_pow = 0;
+int g_current_spd = 0;
 int g_current_score = 0;
 
-int g_enemy_move_frame = 50;
-int g_enemy_spawn_frame = 300;
+int g_enemy_move_frame = MAX_ENEMY_MOVE_FRAME;
+int g_enemy_spawn_frame = MAX_ENEMY_SPAWN_FRAME;
 int g_current_enemy_spawn_frame = 0;
 Enemy g_enemies[MAX_ENEMY];
 int g_enemy_position_map[WIDTH][HEIGHT];
 
-int g_bullet_move_frame = 5;
-int g_bullet_spawn_frame = 100;
+int g_bullet_move_frame = MAX_BULLET_MOVE_FRAME;
+int g_bullet_spawn_frame = MAX_BULLET_SPAWN_FRAME;
 int g_current_bullet_spawn_frame = 0;
 int g_bullet_dir = 0;
 Bullet g_bullet[MAX_BULLET];
+
+PowerUp g_pow_up;
+PowerUp g_spd_up;
+
+int g_score_up_frame = MAX_SCORE_UP_FRAME;
+int g_current_score_up_frame = 0;
 
 const char TITLE_LOGO[][300] = {
 
@@ -149,6 +153,8 @@ void title(WINDOW *win)
         if (g_title_selection == 0)
         {
             g_game_status = 2;
+            spawn_power_up(0);
+            spawn_power_up(1);
             wclear(win);
         }
         else
@@ -233,6 +239,19 @@ void draw_bullets(WINDOW *win)
     wattroff(win,COLOR_PAIR(4));
 }
 
+void draw_pow_up(WINDOW *win)
+{
+    if (g_pow_up.live == 1)
+    {
+        mvwprintw(win, g_pow_up.y, g_pow_up.x,"P");
+    }
+
+    if (g_spd_up.live == 1)
+    {
+        mvwprintw(win, g_spd_up.y, g_spd_up.x,"S");
+    }
+}
+
 void player_enemy_collision_check()
 {
     for (int i = 0; i < MAX_ENEMY; i++)
@@ -262,10 +281,39 @@ void bullet_enemy_collision_check()
             {
                 g_enemies[i].live = 0;
                 g_bullet[j].live = 0;
-                g_current_score += 10;
+                g_current_score += KILL_SCORE;
                 break;
             }
         }
+    }
+}
+
+void player_power_up_collision_check(WINDOW *win)
+{
+    if (g_pow_up.x == g_player_x && g_pow_up.y == g_player_y && g_pow_up.live == 1)
+    {
+        g_current_pow += 1;
+        g_pow_up.live = 0;
+        if (g_current_pow < 8)
+        {
+            spawn_power_up(0);
+        }
+        wclear(win);
+    }
+
+    if (g_spd_up.x == g_player_x && g_spd_up.y == g_player_y && g_spd_up.live == 1)
+    {
+        g_current_spd += 1;
+
+        g_player_move_frame = MAX_PLAYER_MOVE_FRAME - (MAX_PLAYER_MOVE_FRAME - MIN_PLAYER_MOVE_FRAME)/8.0*g_current_spd;
+        g_bullet_spawn_frame = MAX_BULLET_SPAWN_FRAME - (MAX_BULLET_SPAWN_FRAME - MIN_BULLET_SPAWN_FRAME)/8.0*g_current_spd;
+        g_bullet_move_frame = MAX_BULLET_MOVE_FRAME - (MAX_BULLET_MOVE_FRAME - MIN_BULLET_MOVE_FRAME)/8.0*g_current_spd;
+        g_spd_up.live = 0;
+        if (g_current_spd < 8)
+        {
+            spawn_power_up(1);
+        }
+        wclear(win);
     }
 }
 
@@ -389,7 +437,7 @@ void bullet_move()
                     g_bullet[i].current_move_frame = 0;
                 }
 
-                if (g_bullet[i].travel_distance == g_current_pow * 2 + 4)
+                if (g_bullet[i].travel_distance == g_current_pow * 3 + 4)
                 {
                     g_bullet[i].live = 0;
                 }
@@ -560,6 +608,38 @@ void spawn_bullet()
     }
 }
 
+void spawn_power_up(int type)
+{
+    if (type == 0)
+    {
+        int x,y;
+        do
+        {
+            x = 3+(rand() % (WIDTH-6));
+            y = 8+(rand() % (HEIGHT-10));
+        }
+        while(x == g_spd_up.x && y == g_spd_up.y);
+
+        g_pow_up.live = 1;
+        g_pow_up.x = x;
+        g_pow_up.y = y;
+    }
+    else if (type == 1)
+    {
+        int x,y;
+        do
+        {
+            x = 3+(rand() % (WIDTH-6));
+            y = 8+(rand() % (HEIGHT-10));
+        }
+        while(x == g_pow_up.x && y == g_pow_up.y);
+
+        g_spd_up.live = 1;
+        g_spd_up.x = x;
+        g_spd_up.y = y;
+    }
+}
+
 void draw_rectangle(WINDOW *win, int y1, int x1, int y2, int x2)
 {
     mvwhline(win, y1, x1, 0, x2-x1);
@@ -580,6 +660,9 @@ void draw_score_UI(WINDOW *win)
     wattron(win,COLOR_PAIR(5));
     switch(g_current_pow)
     {
+        case 0:
+            mvwprintw(win, 3, 9,"POW □□□□□□□□");
+            break;
         case 1:
             mvwprintw(win, 3, 9,"POW ■□□□□□□□");
             break;
@@ -612,6 +695,9 @@ void draw_score_UI(WINDOW *win)
     wattron(win,COLOR_PAIR(4));
     switch(g_current_spd)
     {
+        case 0:
+            mvwprintw(win, 3, 42,"SPD □□□□□□□□");
+            break;
         case 1:
             mvwprintw(win, 3, 42,"SPD ■□□□□□□□");
             break;
@@ -656,10 +742,23 @@ void draw_score_UI(WINDOW *win)
     score[14] = score_value/10 +'0';
     score_value = score_value%10;
     score[16] = score_value +'0';
-    
+
     wattron(win,COLOR_PAIR(3));
     mvwprintw(win, 3, 75,"%s", score);
     wattroff(win,COLOR_PAIR(3));
+}
+
+void difficulty_control()
+{
+    if (g_current_score_up_frame >= g_score_up_frame)
+    {
+        g_current_score += TIME_SCORE;
+        g_current_score_up_frame = 0;
+    }
+    else
+    {
+        g_current_score_up_frame += 1;
+    }
 }
 
 void gameplay(WINDOW *win)
@@ -719,17 +818,24 @@ void gameplay(WINDOW *win)
     
     flushinp();
 
+    difficulty_control();
+
     spawn_enemy();
     enemy_move();
 
     spawn_bullet();
     bullet_move();
 
+    draw_pow_up(win);
     draw_enemies(win);
     draw_player(win);
     draw_bullets(win);
+
+    mvwprintw(win, 0, 0,"%i", g_bullet_spawn_frame);
+
     player_enemy_collision_check();
     bullet_enemy_collision_check();
+    player_power_up_collision_check(win);
 
     wrefresh(win);
     usleep(DELAY);
