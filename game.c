@@ -238,6 +238,7 @@ void resize()
     mvprintw(1, 1, "Please resize the terminal and re-run the program");
     mvprintw(2, 1, "The size should be at least 100 columns and 40 lines");
     refresh();
+    getch();
 }
 
 void draw_player(WINDOW *win)
