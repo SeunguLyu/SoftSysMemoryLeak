@@ -13,7 +13,7 @@
 #define MAX_BULLET 60
 
 #define TIME_SCORE 1
-#define KILL_SCORE 10
+#define KILL_SCORE 5
 #define DIFFICULTY_SCORE_AMOUNT 20
 #define MAX_DIFFICULTY_LEVEL 75
 
@@ -21,19 +21,19 @@
 #define MIN_PLAYER_MOVE_FRAME 8
 
 #define MAX_ENEMY_MOVE_FRAME 50
-#define MIN_ENEMY_MOVE_FRAME 10
+#define MIN_ENEMY_MOVE_FRAME 20
 
 #define MAX_ENEMY_SPAWN_FRAME 200
 #define MIN_ENEMY_SPAWN_FRAME 5
 
 #define MAX_BULLET_MOVE_FRAME 10
-#define MIN_BULLET_MOVE_FRAME 2
+#define MIN_BULLET_MOVE_FRAME 3
 
 #define MAX_BULLET_SPAWN_FRAME 100
-#define MIN_BULLET_SPAWN_FRAME 20
+#define MIN_BULLET_SPAWN_FRAME 25
 
-#define MAX_SCORE_UP_FRAME 100
-#define MIN_SCORE_UP_FRAME 10
+#define MAX_SCORE_UP_FRAME 50
+#define MIN_SCORE_UP_FRAME 5
 
 typedef struct Enemy
 {
@@ -58,6 +58,7 @@ typedef struct PowerUp
     int live;
     int x;
     int y;
+    int color;
 }PowerUp;
 
 void title(WINDOW *win);

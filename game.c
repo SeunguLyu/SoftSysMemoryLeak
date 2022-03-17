@@ -67,9 +67,9 @@ const char EXTRA_DESCRIPTION[][30] = {
     "Start Game",
     "Exit Game",
     "Press W,A,S,D to move",
-    "Press Enter to Select",
+    "Press ENTER to Select",
     "Your Final Score: ",
-    "Press Any Key to Exit Game...",
+    "Press ENTER to Exit Game...",
 };
 
 void title(WINDOW *win)
@@ -173,6 +173,16 @@ void gameover(WINDOW *win)
     //werase(win);
     box(win,0,0);
 
+    char in = getch();
+    int end = 0;
+
+    switch(in)
+    {
+        case '\n':
+            end = 1;
+            break;
+    }
+
     wattron(win,COLOR_PAIR(3));
     for (int i = 0; i<6; i++)
     {
@@ -185,12 +195,34 @@ void gameover(WINDOW *win)
     mvwprintw(win, 25, xpos, EXTRA_DESCRIPTION[4]);
     wattroff(win,COLOR_PAIR(5));
 
+    char score[] = "0 0 0 0 0 0";
+
+    int score_value = g_current_score;
+
+    score[0] = score_value/100000 +'0';
+    score_value = score_value%100000;
+    score[2] = score_value/10000 +'0';
+    score_value = score_value%10000;
+    score[4] = score_value/1000 +'0';
+    score_value = score_value%1000;
+    score[6] = score_value/100 +'0';
+    score_value = score_value%100;
+    score[8] = score_value/10 +'0';
+    score_value = score_value%10;
+    score[10] = score_value +'0';
+
+    xpos = (WIDTH - strlen(score))/2;
+    mvwprintw(win, 27, xpos, score);
+
     wattron(win,COLOR_PAIR(1));
     xpos = (WIDTH - strlen(EXTRA_DESCRIPTION[5]))/2;
     mvwprintw(win, 30, xpos, EXTRA_DESCRIPTION[5]);
     wattroff(win,COLOR_PAIR(1));
 
-    g_game_status = -1;
+    if (end == 1)
+    {
+        g_game_status = -1;
+    }
 
     nodelay(stdscr, 0);
     
@@ -294,6 +326,8 @@ void player_power_up_collision_check(WINDOW *win)
     if (g_pow_up.x == g_player_x && g_pow_up.y == g_player_y && g_pow_up.live == 1)
     {
         g_current_pow += 1;
+        g_current_score += DIFFICULTY_SCORE_AMOUNT;
+
         g_pow_up.live = 0;
         if (g_current_pow < 8)
         {
@@ -305,6 +339,7 @@ void player_power_up_collision_check(WINDOW *win)
     if (g_spd_up.x == g_player_x && g_spd_up.y == g_player_y && g_spd_up.live == 1)
     {
         g_current_spd += 1;
+        g_current_score += DIFFICULTY_SCORE_AMOUNT;
 
         g_player_move_frame = MAX_PLAYER_MOVE_FRAME - (MAX_PLAYER_MOVE_FRAME - MIN_PLAYER_MOVE_FRAME)/8.0*g_current_spd;
         g_bullet_spawn_frame = MAX_BULLET_SPAWN_FRAME - (MAX_BULLET_SPAWN_FRAME - MIN_BULLET_SPAWN_FRAME)/8.0*g_current_spd;
@@ -845,7 +880,7 @@ void gameplay(WINDOW *win)
     draw_player(win);
     draw_bullets(win);
 
-    mvwprintw(win, 0, 0,"%i", g_enemy_spawn_frame);
+    //mvwprintw(win, 0, 0,"%i", g_enemy_spawn_frame);
 
     player_enemy_collision_check();
     bullet_enemy_collision_check();
