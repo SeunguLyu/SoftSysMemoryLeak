@@ -279,6 +279,7 @@ void bullet_enemy_collision_check()
             }
             if (g_bullet[j].x == g_enemies[i].x && g_bullet[j].y == g_enemies[i].y)
             {
+                g_enemy_position_map[g_enemies[i].x][g_enemies[i].y] = 0;
                 g_enemies[i].live = 0;
                 g_bullet[j].live = 0;
                 g_current_score += KILL_SCORE;
@@ -759,6 +760,19 @@ void difficulty_control()
     {
         g_current_score_up_frame += 1;
     }
+
+    int difficulty_level;
+
+    difficulty_level = g_current_score/DIFFICULTY_SCORE_AMOUNT;
+
+    if (difficulty_level > MAX_DIFFICULTY_LEVEL)
+    {
+        difficulty_level = MAX_DIFFICULTY_LEVEL;
+    }
+
+    g_enemy_move_frame = MAX_ENEMY_MOVE_FRAME - (MAX_ENEMY_MOVE_FRAME - MIN_ENEMY_MOVE_FRAME)/(float)MAX_DIFFICULTY_LEVEL*difficulty_level;
+    g_enemy_spawn_frame = MAX_ENEMY_SPAWN_FRAME - (MAX_ENEMY_SPAWN_FRAME - MIN_ENEMY_SPAWN_FRAME)/(float)MAX_DIFFICULTY_LEVEL*difficulty_level;
+    g_score_up_frame = MAX_SCORE_UP_FRAME - (MAX_SCORE_UP_FRAME - MIN_SCORE_UP_FRAME)/(float)MAX_DIFFICULTY_LEVEL*difficulty_level;
 }
 
 void gameplay(WINDOW *win)
@@ -831,7 +845,7 @@ void gameplay(WINDOW *win)
     draw_player(win);
     draw_bullets(win);
 
-    mvwprintw(win, 0, 0,"%i", g_bullet_spawn_frame);
+    mvwprintw(win, 0, 0,"%i", g_enemy_spawn_frame);
 
     player_enemy_collision_check();
     bullet_enemy_collision_check();
