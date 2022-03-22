@@ -39,7 +39,6 @@ int main(int argc, char *argv[])
     while(g_game_status > 0)
     {
         getmaxyx(stdscr, g_terminal_y, g_terminal_x);
-        //mvwin(main_window,g_terminal_y/2-HEIGHT/2, g_terminal_x/2-WIDTH/2);
 
         if (g_game_status == 1)
         {
@@ -54,8 +53,7 @@ int main(int argc, char *argv[])
             gameover(main_window);
         }
     }
-
-	//getch();
+    
 	endwin();
 	return 0;
 }

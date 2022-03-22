@@ -1,10 +1,13 @@
 #include "game.h"
 
+//current terminal size
 int g_terminal_y = 0, g_terminal_x = 0;
 
+//game status controls game behavior
 int g_game_status = 0;
 int g_title_selection = 0;
 
+//player variables
 int g_player_dir = -1;
 int g_player_x = WIDTH/2;
 int g_player_y = (HEIGHT-6)/2 + 6;
@@ -12,27 +15,31 @@ int g_player_y = (HEIGHT-6)/2 + 6;
 int g_player_move_frame = MAX_PLAYER_MOVE_FRAME;
 int g_current_player_move_frame = 0;
 
+//power-up variables
 int g_current_pow = 0;
 int g_current_spd = 0;
 int g_current_score = 0;
-
-int g_enemy_move_frame = MAX_ENEMY_MOVE_FRAME;
-int g_enemy_spawn_frame = MAX_ENEMY_SPAWN_FRAME;
-int g_current_enemy_spawn_frame = 0;
-Enemy g_enemies[MAX_ENEMY];
-int g_enemy_position_map[WIDTH][HEIGHT];
-
-int g_bullet_move_frame = MAX_BULLET_MOVE_FRAME;
-int g_bullet_spawn_frame = MAX_BULLET_SPAWN_FRAME;
-int g_current_bullet_spawn_frame = 0;
-int g_bullet_dir = 0;
-Bullet g_bullet[MAX_BULLET];
 
 PowerUp g_pow_up;
 PowerUp g_spd_up;
 int g_power_up_color_frame = 100;
 int g_current_power_up_color_frame = 0;
 
+//enemy variables
+int g_enemy_move_frame = MAX_ENEMY_MOVE_FRAME;
+int g_enemy_spawn_frame = MAX_ENEMY_SPAWN_FRAME;
+int g_current_enemy_spawn_frame = 0;
+Enemy g_enemies[MAX_ENEMY];
+int g_enemy_position_map[WIDTH][HEIGHT];
+
+//bullet variables
+int g_bullet_move_frame = MAX_BULLET_MOVE_FRAME;
+int g_bullet_spawn_frame = MAX_BULLET_SPAWN_FRAME;
+int g_current_bullet_spawn_frame = 0;
+int g_bullet_dir = 0;
+Bullet g_bullet[MAX_BULLET];
+
+//score variables
 int g_score_up_frame = MAX_SCORE_UP_FRAME;
 int g_current_score_up_frame = 0;
 
@@ -73,6 +80,9 @@ const char EXTRA_DESCRIPTION[][30] = {
     "Your Final Score: ",
     "Press ENTER to Exit Game...",
 };
+
+/* title: display the title screen of the game on the window. 
+    Receive user input W, S, ENTER to start the game or exit the game */
 
 void title(WINDOW *win)
 {
@@ -169,6 +179,9 @@ void title(WINDOW *win)
     usleep(DELAY);
 }
 
+/* gameover: display the game over screen of the game on the window. 
+    Receive user ENTER to exit the game */
+
 void gameover(WINDOW *win)
 {
     wclear(win);
@@ -232,6 +245,8 @@ void gameover(WINDOW *win)
     usleep(DELAY);
 }
 
+/* resize: show resize message if the terminal size is too small */
+
 void resize()
 {
     clear();
@@ -241,12 +256,17 @@ void resize()
     getch();
 }
 
+/* draw_player: draw the player character on the window */
+
 void draw_player(WINDOW *win)
 {
     wattron(win,COLOR_PAIR(1));
     mvwprintw(win, g_player_y, g_player_x,"⚇");
     wattroff(win,COLOR_PAIR(1));
 }
+
+/* draw_enemies: draw the enemy characters on the window.
+    Only prints the enemies with live == 1 */
 
 void draw_enemies(WINDOW *win)
 {
@@ -261,6 +281,9 @@ void draw_enemies(WINDOW *win)
     wattroff(win,COLOR_PAIR(5));
 }
 
+/* draw_bullets: draw the bullets on the window.
+    Only prints the bullets with live == 1 */
+
 void draw_bullets(WINDOW *win)
 {
     wattron(win,COLOR_PAIR(4));
@@ -273,6 +296,9 @@ void draw_bullets(WINDOW *win)
     }
     wattroff(win,COLOR_PAIR(4));
 }
+
+/* draw_pow_up: draw power-up items on the window.
+    Randomly changes to one of three colors every g_power_up_color_frame. */
 
 void draw_pow_up(WINDOW *win)
 {
@@ -335,6 +361,9 @@ void draw_pow_up(WINDOW *win)
     }
 }
 
+/* player_enemy_collision_check: check collision between player and enemy.
+    When hit, change game status to 3 to make transition to game over */
+
 void player_enemy_collision_check()
 {
     for (int i = 0; i < MAX_ENEMY; i++)
@@ -345,6 +374,10 @@ void player_enemy_collision_check()
         }
     }
 }
+
+/* bullet_enemy_collision_check: check collision between bullet and enemy.
+    When hit, deactivate both the bullet and the enemy.
+    Add KILL_SCORE to the current game score for every enemy hit. */
 
 void bullet_enemy_collision_check()
 {
@@ -371,6 +404,12 @@ void bullet_enemy_collision_check()
         }
     }
 }
+
+/* player_power_up_collision_check: check collision between player and power-up items.
+    When hit with power up, add 1 to current power.
+    When hit with speed up, improve player move speed, bullet spawn rate, and bullet move frame 
+    Add DIFFICULTY_SCORE_AMOUNT to current score when hit.
+    Spawn the power-up items again if they are not at the maximum value. */
 
 void player_power_up_collision_check(WINDOW *win)
 {
@@ -403,6 +442,11 @@ void player_power_up_collision_check(WINDOW *win)
         wclear(win);
     }
 }
+
+/* enemy_move: move all the activated enemies that has enough frames to move. 
+    Move toward the player by comparing current x,y position with the player character
+    If x,y coordinate are both different, 50% chance to move toward each direction
+    If either x, y coordinate is the same, move toward direction that is not same */
 
 void enemy_move()
 {
@@ -468,6 +512,10 @@ void enemy_move()
         }
     }
 }
+
+/* bullet_move: move all the activated bullets that has enough frames to move. 
+    Move toward the direction set when the bullet was spawned.
+    When bullet traveled the maximum distance or is out of screen, deactivate it. */
 
 void bullet_move()
 {
@@ -538,6 +586,11 @@ void bullet_move()
     }
 }
 
+/* spawn_enemy: activate a single enemy if there is enough enemy spawn frame. 
+    Do not activate if the number of enemies reached at maximum.
+    Activate and place enemy randomly on the border of the screen.
+    Skip the current frame if there's already enemy in the spawning coordinate. */
+
 void spawn_enemy()
 {
     if (g_current_enemy_spawn_frame >= g_enemy_spawn_frame)
@@ -598,6 +651,12 @@ void spawn_enemy()
         g_current_enemy_spawn_frame += 1;
     }
 }
+
+/* spawn_bullet: activate bullets if there is enough bullet spawn frame. 
+    Do not activate if the number of bullets reached at maximum.
+    Activate and place bullets around the player character depending on current power level.
+    Do not activate if the bullet is out of boundary.
+    Rotate the shooting direction every time spawn_bullet is called successfully. */
 
 void spawn_bullet()
 {
@@ -695,6 +754,9 @@ void spawn_bullet()
     }
 }
 
+/* spawn_power_up: activate power-ups. 
+    Spawns the power-up at random x,y coordinate that does not have power-up item already. */
+
 void spawn_power_up(int type)
 {
     if (type == 0)
@@ -729,6 +791,8 @@ void spawn_power_up(int type)
     }
 }
 
+/* draw_rectangle: draws rectangle for UI elements on the window. */
+
 void draw_rectangle(WINDOW *win, int y1, int x1, int y2, int x2)
 {
     mvwhline(win, y1, x1, 0, x2-x1);
@@ -740,6 +804,8 @@ void draw_rectangle(WINDOW *win, int y1, int x1, int y2, int x2)
     mvwaddch(win, y1, x2, ACS_URCORNER);
     mvwaddch(win, y2, x2, ACS_LRCORNER);
 }
+
+/* draw_score_UI: draws score UI on the window. */
 
 void draw_score_UI(WINDOW *win)
 {
@@ -837,6 +903,10 @@ void draw_score_UI(WINDOW *win)
     wattroff(win,COLOR_PAIR(3));
 }
 
+/* difficulty_control: controls enemy move speed and spawn rate over time.
+    Also adds TIME_SCORE if there is enough score up frame.
+    Rate of earning score also increases over time. */
+
 void difficulty_control()
 {
     if (g_current_score_up_frame >= g_score_up_frame)
@@ -862,6 +932,10 @@ void difficulty_control()
     g_enemy_spawn_frame = MAX_ENEMY_SPAWN_FRAME - (MAX_ENEMY_SPAWN_FRAME - MIN_ENEMY_SPAWN_FRAME)/(float)MAX_DIFFICULTY_LEVEL*difficulty_level;
     g_score_up_frame = MAX_SCORE_UP_FRAME - (MAX_SCORE_UP_FRAME - MIN_SCORE_UP_FRAME)/(float)MAX_DIFFICULTY_LEVEL*difficulty_level;
 }
+
+/* gameplay: display the main game screen on the window
+    Gets user input for keys W, S, A, D for movement direction. 
+    Moves the player character if there is enough player move frame. */
 
 void gameplay(WINDOW *win)
 {
@@ -933,8 +1007,6 @@ void gameplay(WINDOW *win)
     draw_player(win);
     draw_bullets(win);
 
-    //mvwprintw(win, 0, 0,"%i", g_enemy_spawn_frame);
-
     player_enemy_collision_check();
     bullet_enemy_collision_check();
     player_power_up_collision_check(win);
@@ -942,6 +1014,8 @@ void gameplay(WINDOW *win)
     wrefresh(win);
     usleep(DELAY);
 }
+
+/* initialize_colors: initialize colors used for Ncurses */
 
 void initialize_colors()
 {
